@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Калькулятор поддонов — исправленный</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f5f2;color:#172018;font-family:Arial,sans-serif}
+main{max-width:1050px;margin:auto;padding:24px}
+h1{margin:0 0 20px;font-size:32px}
+.dashHead{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:22px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;color:#667064;margin-bottom:5px}
+.subtitle{color:#667064;margin-top:-12px}
+.status{font-size:13px;font-weight:700;background:#e7f0e8;color:#245035;padding:9px 12px;border-radius:999px;white-space:nowrap}
+.card{background:#fff;border:1px solid #dfe3dc;border-radius:18px;padding:18px;margin-bottom:14px}
+h2{margin:0 0 14px;font-size:21px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid4{display:grid;grid-template-columns:160px 1fr 1fr 1.35fr;gap:12px}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}
+input{width:100%;min-width:0;min-height:48px;padding:10px 12px;border:1px solid #cbd2c8;border-radius:11px;font-size:18px;background:white}
+input:focus{outline:3px solid #c8ddce;border-color:#315c40}
+.parts{display:grid;grid-template-columns:1fr;gap:14px}
+.printMeta{display:none}
+.result{background:#183f2b;color:white;border-radius:20px;padding:20px;margin-top:18px}
+.resultHead{display:flex;justify-content:space-between;gap:16px;align-items:end;margin-bottom:10px}
+.resultHead small{opacity:.75}
+.resultHead strong{font-size:25px}
+.row{padding:12px 0;border-bottom:1px solid #ffffff28}
+.row:last-child{border:0}
+.top{display:flex;justify-content:space-between;gap:12px;font-size:18px}
+.top b{font-size:21px;white-space:nowrap}
+.dim{opacity:.75;margin-top:4px;font-size:14px}
+.lengthWrap{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:8px;align-items:stretch}
+.lengthWrap input{min-width:0;width:100%}
+.autoBtn{min-width:72px;border:1px solid #cbd2c8;border-radius:10px;padding:0 10px;background:#eef3ed;color:#183f2b;font-weight:700;cursor:pointer}
+.autoBtn.manual{background:#fff4df;color:#805b17}
+.autoHint{font-size:11px;color:#6b7469;margin-top:4px}
+
+.actions{display:flex;justify-content:flex-end;margin:0 0 14px}
+.printBtn{border:0;border-radius:12px;padding:12px 18px;font-size:16px;font-weight:700;background:#183f2b;color:#fff;cursor:pointer}
+.printBtn:hover{filter:brightness(1.08)}
+@media print{
+  body{background:#fff;color:#000}
+  main{max-width:none;padding:0}
+  h1{font-size:24px;margin-bottom:14px}
+  .actions,.card{display:none !important}
+  .autoBtn,.autoHint{display:none !important}
+  .result{background:#fff;color:#000;border:1px solid #bbb;border-radius:0;padding:16px;margin:0}
+  .resultHead small,.dim{opacity:1;color:#333}
+  .dashHead{margin-bottom:14px}
+  .status,.subtitle,.eyebrow{display:none}
+  .jobCard{display:none !important}
+  .printMeta{display:block;color:#000;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #bbb;font-size:14px}
+  .row{border-bottom:1px solid #ccc;break-inside:avoid}
+  .top b{color:#000}
+}
+@media(max-width:900px){
+ .grid4{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+ .dashHead{align-items:flex-start;flex-direction:column}
+ .status{align-self:flex-start}
+ main{padding:15px}
+ .parts{grid-template-columns:1fr}
+ .grid3{grid-template-columns:1fr}
+ .grid4{grid-template-columns:1fr 1fr}
+ h1{font-size:27px}
+}
+@media(max-width:430px){
+ .grid4{grid-template-columns:1fr}
+ .lengthWrap{grid-template-columns:minmax(0,1fr) 78px}
+}
+</style>
+</head>
+<body>
+<main>
+<div class="dashHead">
+      <div>
+        <div class="eyebrow">РАБОЧИЙ ДАШБОРД</div>
+        <h1>Калькулятор поддонов</h1>
+        <div class="subtitle">Расчёт комплектующих для производства</div>
+      </div>
+      <div class="status">● Готов к работе</div>
+    </div>
+<div class="actions"><button class="printBtn" id="printBtn" type="button">🖨️ Распечатать</button></div>
+
+<section class="card jobCard">
+<h2>Заказ / смена</h2>
+<div class="grid3">
+<div><label>Номер заказа</label><input id="orderNo" type="text" placeholder="Например: 1542"></div>
+<div><label>Сотрудник</label><input id="worker" type="text" placeholder="Имя"></div>
+<div><label>Дата</label><input id="jobDate" type="date"></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Поддон</h2>
+<div class="grid3">
+<div><label>Длина, мм</label><input id="pL" type="number" value="1250"></div>
+<div><label>Ширина, мм</label><input id="pW" type="number" value="1180"></div>
+<div><label>Количество поддонов</label><input id="qty" type="number" min="1" value="100"></div>
+</div>
+</section>
+
+<div id="parts" class="parts"></div>
+
+<section class="result">
+<div id="printMeta" class="printMeta"></div>
+<div class="resultHead"><div><small>Итог для</small><br><strong id="palletSize">1250 × 1180 мм</strong></div><b id="qtyLabel">100 подд.</b></div>
+<div id="results"></div>
+</section>
+</main>
+
+<script>
+const data=[
+ ["Настил",9,22,98,"PL"],                 // длина = длина поддона, например 1200
+ ["Поперечный настил",3,22,98,"PW"],      // длина = ширина поддона, например 800
+ ["Лыжа",3,22,98,1200],                   // ручной ввод 600–2500
+ ["Лыжа 2",2,22,98,1200],                 // ручной ввод 600–2500
+ ["Шашка 1",6,75,98,150],
+ ["Шашка 2",3,75,100,98]
+];
+
+const parts=document.getElementById("parts");
+const results=document.getElementById("results");
+const autoMode={0:true,1:true};
+
+function palletDim(link){
+ const pl=Number(document.getElementById("pL").value);
+ const pw=Number(document.getElementById("pW").value);
+ if(link==="PL") return Number.isFinite(pl) && pl>0 ? Math.floor(pl) : "";
+ if(link==="PW") return Number.isFinite(pw) && pw>0 ? Math.floor(pw) : "";
+ return "";
+}
+
+data.forEach((p,i)=>{
+ const linked = p[4]==="PL" || p[4]==="PW";
+ const initialLen = linked ? palletDim(p[4]) : p[4];
+ const lengthLimits = (i===2 || i===3) ? 'min="600" max="2500"' : 'min="0"';
+ parts.insertAdjacentHTML("beforeend",`
+ <section class="card">
+ <h2>${p[0]}</h2>
+ <div class="grid4">
+  <div><label>На 1 поддон</label><input id="n${i}" type="number" min="0" value="${p[1]}"></div>
+  <div><label>Толщина, мм</label><input id="t${i}" type="number" min="0" value="${p[2]}"></div>
+  <div><label>Ширина, мм</label><input id="w${i}" type="number" min="0" value="${p[3]}"></div>
+  <div>
+   <label>Длина, мм</label>
+   <div class="lengthWrap">
+    <input id="l${i}" type="number" ${lengthLimits} value="${initialLen}">
+    ${linked ? `<button class="autoBtn" id="a${i}" type="button">Авто</button>` : ""}
+   </div>
+   ${linked ? `<div class="autoHint" id="h${i}">${p[4]==="PL" ? "по длине поддона" : "по ширине поддона"}</div>` : ""}
+   ${(i===2 || i===3) ? `<div class="autoHint">ручной ввод 600–2500 мм</div>` : ""}
+  </div>
+ </div></section>`);
+ results.insertAdjacentHTML("beforeend",`
+ <div class="row">
+  <div class="top"><span>${p[0]}</span><b id="r${i}">0 шт.</b></div>
+  <div class="dim" id="d${i}"></div>
+ </div>`);
+});
+
+function number(id,min=0){
+ const x=Number(document.getElementById(id).value);
+ return Number.isFinite(x)&&x>=min?Math.floor(x):null;
+}
+
+function syncAutoLengths(){
+ [0,1].forEach(i=>{
+  if(autoMode[i]){
+   document.getElementById("l"+i).value=palletDim(data[i][4]);
+   const btn=document.getElementById("a"+i);
+   if(btn){btn.textContent="Авто";btn.classList.remove("manual");}
+  }
+ });
+}
+
+function calc(){
+ const q=number("qty",1), pl=number("pL",1), pw=number("pW",1);
+ document.getElementById("palletSize").textContent=(pl&&pw)?`${pl} × ${pw} мм`:"Введите размер";
+ document.getElementById("qtyLabel").textContent=q?`${q.toLocaleString("ru-RU")} подд.`:"Введите количество";
+
+ data.forEach((_,i)=>{
+  const n=number("n"+i,0);
+  const t=number("t"+i,0);
+  const w=number("w"+i,0);
+  const l=number("l"+i,0);
+
+  // Если строка не нужна и количество = 0, размеры можно также оставить 0.
+  if(n===0){
+   document.getElementById("r"+i).textContent="0 шт.";
+   document.getElementById("d"+i).textContent=(t||w||l)?`${t||0} × ${w||0} × ${l||0} мм`:"не используется";
+   return;
+  }
+
+  document.getElementById("r"+i).textContent=(q!==null&&n!==null)?`${(q*n).toLocaleString("ru-RU")} шт.`:"—";
+  document.getElementById("d"+i).textContent=(t>0&&w>0&&l>0)?`${t} × ${w} × ${l} мм`:"Введите размер";
+ });
+}
+
+document.getElementById("pL").addEventListener("input",()=>{syncAutoLengths();calc();});
+document.getElementById("pW").addEventListener("input",()=>{syncAutoLengths();calc();});
+
+// Настил и поперечный настил можно всё равно перевести в ручной режим.
+[0,1].forEach(i=>{
+ const len=document.getElementById("l"+i);
+ len.addEventListener("input",()=>{
+  autoMode[i]=false;
+  const btn=document.getElementById("a"+i);
+  btn.textContent="Ручной";
+  btn.classList.add("manual");
+  calc();
+ });
+ document.getElementById("a"+i).addEventListener("click",()=>{
+  autoMode[i]=true;
+  len.value=palletDim(data[i][4]);
+  const btn=document.getElementById("a"+i);
+  btn.textContent="Авто";
+  btn.classList.remove("manual");
+  calc();
+ });
+});
+
+const dateInput=document.getElementById("jobDate");
+if(dateInput && !dateInput.value){
+ const d=new Date(), y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+ dateInput.value=`${y}-${m}-${day}`;
+}
+function updatePrintMeta(){
+ const order=document.getElementById("orderNo").value.trim() || "—";
+ const worker=document.getElementById("worker").value.trim() || "—";
+ const date=document.getElementById("jobDate").value || "—";
+ document.getElementById("printMeta").textContent=`Заказ: ${order}   •   Сотрудник: ${worker}   •   Дата: ${date}`;
+}
+document.getElementById("printBtn").addEventListener("click",()=>{updatePrintMeta();window.print();});
+document.addEventListener("input",(e)=>{
+ if(e.target.id!=="pL" && e.target.id!=="pW" && !/^l[01]$/.test(e.target.id)) calc();
+});
+document.addEventListener("change",calc);
+
+syncAutoLengths();
+calc();
+</script>
+</body>
+</html>
